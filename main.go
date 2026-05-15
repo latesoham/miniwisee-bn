@@ -5,6 +5,7 @@ import ("database/sql"
 		"log"
 
 		"github.com/gin-gonic/gin"
+		"github.com/gin-contrib/cors"
 		_ "github.com/go-sql-driver/mysql"
 	)
 type Ticket struct {
@@ -39,6 +40,8 @@ fmt.Println("✅ Connected to MySQL")
 
 	router := gin.Default()
 
+	router.Use(cors.Default())
+
 router.GET("/", func(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "MiniWise Backend Running 🚀",
@@ -46,6 +49,8 @@ router.GET("/", func(c *gin.Context) {
 })
 
 router.GET("/tickets", func(c *gin.Context) {
+
+	tickets := []Ticket{}
 
 	rows, err := db.Query("SELECT id, title, priority, tag_name, status FROM tickets")
 
@@ -57,8 +62,6 @@ router.GET("/tickets", func(c *gin.Context) {
 	}
 
 	defer rows.Close()
-
-	var tickets []Ticket
 
 	for rows.Next() {
 
@@ -79,7 +82,7 @@ router.GET("/tickets", func(c *gin.Context) {
 			return
 		}
 
-		
+		tickets = append(tickets, ticket)
 	}
 
 	c.JSON(200, tickets)
