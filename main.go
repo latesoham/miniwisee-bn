@@ -150,5 +150,44 @@ router.DELETE("/tickets/:id", func(c *gin.Context) {
 		"message": "Ticket deleted successfully",
 	})
 })
+
+router.PUT("/tickets/:id", func(c *gin.Context) {
+
+	id := c.Param("id")
+
+	var updatedTicket Ticket
+
+	if err := c.BindJSON(&updatedTicket); err != nil {
+		c.JSON(400, gin.H{
+			"error": "Invalid JSON",
+		})
+		return
+	}
+
+	query := `
+	UPDATE tickets
+	SET title = ?, priority = ?, tag_name = ?, status = ?
+	WHERE id = ?
+	`
+
+	_, err := db.Exec(
+		query,
+		updatedTicket.Title,
+		updatedTicket.Priority,
+		updatedTicket.Tag,
+		updatedTicket.Status,
+		id,
+	)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Ticket updated successfully",
+	})
+})
 	router.Run(":8080")
 }
